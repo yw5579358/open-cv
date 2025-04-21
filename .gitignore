@@ -1,0 +1,53 @@
+# PyCharm 特定文件
+.idea/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+
+# Python 通用忽略
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# 日志和数据库
+*.log
+*.sqlite
+*.db
+
+# 虚拟环境
+venv/
+env/
+.benv/
+.vscode/
+
+# 缓存和临时文件
+.cache/
+*.tmp
+*.bak
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb
+
+# 配置文件（如.env）
+.env
+.secrets
