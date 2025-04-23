@@ -23,7 +23,7 @@ FIRST_NUMBER = {
 # 绘图展示
 def cv_show(name,img):
 	cv2.imshow(name, img)
-	cv2.waitKey(0)
+	cv2.waitKey(100)
 	cv2.destroyAllWindows()
 # 读取一个模板图像
 img = cv2.imread(args["template"])
@@ -48,15 +48,15 @@ digits = {}
 
 # 遍历每一个轮廓
 for (i, c) in enumerate(refCnts):
-	# 计算外接矩形并且resize成合适大小
+	# 计算外接矩形并且resize成合适大小，x y 是左上角的坐标 y是列坐标 y+h y到y+h是取的这h行
 	(x, y, w, h) = cv2.boundingRect(c)
 	roi = ref[y:y + h, x:x + w]
-	roi = cv2.resize(roi, (57, 88))
+	roi = cv2.resize(roi, (57, 88)) #57是宽度88是高度
 
 	# 每一个数字对应每一个模板
 	digits[i] = roi
 
-# 初始化卷积核
+# 初始化卷积核 通过getStructuringElement获取 9*3更贴近业务
 rectKernel = cv2.getStructuringElement(cv2.MORPH_RECT, (9, 3))
 sqKernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
 
@@ -67,14 +67,14 @@ image = myutils.resize(image, width=300)
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 cv_show('gray',gray)
 
-#礼帽操作，突出更明亮的区域
+#礼帽操作，突出更明亮的区域 原始-开（先缩后膨）
 tophat = cv2.morphologyEx(gray, cv2.MORPH_TOPHAT, rectKernel) 
 cv_show('tophat',tophat) 
-# 
+# sobel梯度
 gradX = cv2.Sobel(tophat, ddepth=cv2.CV_32F, dx=1, dy=0, #ksize=-1相当于用3*3的
 	ksize=-1)
 
-
+#绝对值，最小值，最大值，然后归一化
 gradX = np.absolute(gradX)
 (minVal, maxVal) = (np.min(gradX), np.max(gradX))
 gradX = (255 * ((gradX - minVal) / (maxVal - minVal)))
@@ -86,7 +86,7 @@ cv_show('gradX',gradX)
 #通过闭操作（先膨胀，再腐蚀）将数字连在一起
 gradX = cv2.morphologyEx(gradX, cv2.MORPH_CLOSE, rectKernel) 
 cv_show('gradX',gradX)
-#THRESH_OTSU会自动寻找合适的阈值，适合双峰，需把阈值参数设置为0
+#二值化，但是不确定阈值怎么选，图像又二分明显，可以使用，THRESH_OTSU会自动寻找合适的阈值，适合双峰，需把阈值参数设置为0
 thresh = cv2.threshold(gradX, 0, 255,
 	cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1] 
 cv_show('thresh',thresh)
@@ -111,6 +111,7 @@ locs = []
 for (i, c) in enumerate(cnts):
 	# 计算矩形
 	(x, y, w, h) = cv2.boundingRect(c)
+	#宽高比
 	ar = w / float(h)
 
 	# 选择合适的区域，根据实际任务来，这里的基本都是四个数字一组
