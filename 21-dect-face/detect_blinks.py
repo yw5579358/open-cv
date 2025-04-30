@@ -48,10 +48,12 @@ TOTAL = 0
 
 # 检测与定位工具
 print("[INFO] loading facial landmark predictor...")
+#创建一个用于检测正面人脸的检测器。
 detector = dlib.get_frontal_face_detector()
+#加载一个训练好的人脸关键点预测模型 68点位
 predictor = dlib.shape_predictor('D:/wym/work/my/home/open-cv/21-dect-face/shape_predictor_68_face_landmarks.dat')
 
-# 分别取两个眼睛区域
+# 分别取两个眼睛区域 起始索引和结束索引
 (lStart, lEnd) = FACIAL_LANDMARKS_68_IDXS["left_eye"]
 (rStart, rEnd) = FACIAL_LANDMARKS_68_IDXS["right_eye"]
 
@@ -76,7 +78,7 @@ while True:
 	frame = vs.read()[1]
 	if frame is None:
 		break
-	
+	#resize 及 调整为灰度图
 	(h, w) = frame.shape[:2]
 	width=1200
 	r = width / float(w)
@@ -84,18 +86,21 @@ while True:
 	frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
 	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-	# 检测人脸
+	# 检测人脸 0是上金字塔采样次数，0不采样，如果人脸很小可以设置为1,2
 	rects = detector(gray, 0)
 
 	# 遍历每一个检测到的人脸
 	for rect in rects:
-		# 获取坐标
+		# 获取坐标 根据检测到的人脸区域（rect），在图像 gray 上预测出这张人脸的 68 个关键点位置。
 		shape = predictor(gray, rect)
+		#将dlib中的shape 转换为 ndarry
 		shape = shape_to_np(shape)
 
 		# 分别计算ear值
+		#leftEye：shape[42:48] 左眼的 6 个关键点
 		leftEye = shape[lStart:lEnd]
 		rightEye = shape[rStart:rEnd]
+		#肌酸眨眼没
 		leftEAR = eye_aspect_ratio(leftEye)
 		rightEAR = eye_aspect_ratio(rightEye)
 
